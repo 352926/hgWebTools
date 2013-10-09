@@ -1,24 +1,74 @@
-<html>
-<head>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
 
-</head>
-<body>
-<script src="http://s24.cnzz.com/stat.php?id=5619041&web_id=5619041" language="JavaScript"></script>	
-<script type="text/javascript">
-	
-var pp = "242&pre="+(new Date()).getTime();
-var s=String(window.location.href);
-var host=escape(s.substring(7,s.indexOf('/',7)));
-var ref=escape(document.referrer);
-s = escape(s); 
-//ysm-->
-location="http://search.114so.cn/search_web.html?id=407&kw="+host;
-//ysm--<
+#define VERSION "v1.0"
+#define AUTHOR "Change"
+#define EMAIL "352926@qq.com"
 
-</script>
+char *l_opt_arg;
+char* const short_options = "hur:v";
+struct option long_options[] = {
+    {"help",0,NULL,'h'},
+    {"update",0,NULL,'u'},
+    {"log",2,NULL,'l'},
+    {"rev",1,NULL,'r'},
+    {"version",0,NULL,'v'},
+    {0,0,0,0},
+};
+void *pullNew();
+void *help();
 
+int main(int argc, char *argv[]){
+    int c,j;
+    while((c = getopt_long (argc, argv, short_options, long_options, NULL)) != -1){
+        switch(c){
+            case 'h':
+                help();
+                return 1;
+                break;
+            case 'u':
+                pullNew();
+                return 1;
+                break;
+            case 'r':
+                l_opt_arg = optarg;
+                printf("还在开发,%s!\n",l_opt_arg);
+                return 1;
+                break;
+            case 'l':
+                system("/usr/bin/hg log | head");
+                return 1;
+                break;
+            case 'v':
+                printf("Version:%s\n",VERSION);
+                printf("Author:%c[%d;1m%s%c[0m<%s>\n",27,31,AUTHOR,27,EMAIL);
+                return 1;
+                break;
+            default:
+                help();
+                return 1;
+                break;
+        }
+    }
+    help();
+    return 0;
+}
 
-<body>
-</body>
+void *pullNew(){
+    system("/usr/bin/hg update -r`hg pull > /dev/null && hg log --template '{rev} |{branches}|\n' | grep \"线上\" | head -1 | awk '{print $1}'` -C");
+    system("/usr/bin/hg log --template '当前版本：{rev} 分支：{branches} 版本说明：{desc}\n' | grep \"线上\" | head -1");
+    printf("谢谢使用!\n");
+}
 
-</html>
+void *help(){
+    printf("Hg网站发布小工具- Change\n\n");
+    printf("  -v, --version                当前版本\n");
+    printf("  -h, --help                   查看帮助\n");
+    printf("  -u, --update                 发布至最新“线上”分支\n");
+    printf("  -l, --log 123                查看123分支的文件变化\n");
+    printf("  -r, --rev 123                更新至指定版本\n");
+    printf("谢谢使用!\n");
+}
+
